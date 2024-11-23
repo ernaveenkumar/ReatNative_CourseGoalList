@@ -1,107 +1,78 @@
 import React, { useState } from 'react';
-import {
-  Button,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  ScrollView,
-  FlatList,
-} from 'react-native';
+import { StyleSheet, View, FlatList, Button } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+
+import GoalItem from './components/GoalItem';
+import GoalInput from './components/GoalInput';
 //Lecture 25 to start
 export default function App() {
-  const [enteredGoalText, setEnteredGoalText] = useState('');
   const [courseGoals, setCourseGoals] = useState([]);
+  const [modalIsVisible, setModalIsVisible] = useState(false);
 
-  function goalInputHandler(entered_text) {
-    setEnteredGoalText(entered_text);
-  }
-
-  function addGoalHandler() {
+  function addGoalHandler(entered_text) {
     setCourseGoals((currentGoals) => [
       ...currentGoals,
-      { text: enteredGoalText, id: Math.random().toString() },
+      { text: entered_text, id: Math.random().toString() },
     ]);
+    setModalIsVisible(false);
     console.log(courseGoals);
   }
 
+  function deleteGoal(goal_id) {
+    //alert(`Goal with id ${goal_id} deleted successfully.`);
+    setCourseGoals(courseGoals.filter((goalitem) => goalitem.id !== goal_id));
+  }
+
+  function startAddGoalHandler() {
+    setModalIsVisible(true);
+  }
+
   return (
-    <View style={[styles.container, { marginTop: 20, padding: 10 }]}>
-      <View style={styles.row}>
-        <TextInput
-          placeholder="Your course goals!"
-          style={styles.inputBox}
-          onChangeText={goalInputHandler}
-        />
-        <Button title="Add goal" onPress={addGoalHandler} />
+    <>
+      <StatusBar style="light" />
+      <View style={[styles.container, { padding: 10 }]}>
+        <View style={{ marginBottom: 10 }}>
+          <Button
+            title="Add New Goal"
+            visible={modalIsVisible}
+            color="#2196F3"
+            animationType="slide"
+            onPress={startAddGoalHandler}
+          />
+        </View>
+
+        {modalIsVisible && <GoalInput addGoalHandler={addGoalHandler} />}
+        <View style={styles.goalListContainer}>
+          <FlatList
+            data={courseGoals}
+            renderItem={(itemData) => {
+              return (
+                <GoalItem
+                  text={itemData.item.text}
+                  id={itemData.item.id}
+                  deleteGoal={deleteGoal}
+                />
+              );
+            }}
+            keyExtractor={(item, index) => {
+              return item.id;
+            }}
+            alwaysBounceVertical={false}
+          />
+        </View>
       </View>
-      <View style={styles.goalListContainer}>
-        <FlatList
-          data={courseGoals}
-          renderItem={(itemData) => {
-            return (
-              <View style={styles.goalItem}>
-                <Text style={styles.goalText}>{itemData.item.text}</Text>
-              </View>
-            );
-          }}
-          keyExtractor={(item, index) => {
-            return item.id;
-          }}
-          alwaysBounceVertical={false}
-        />
-      </View>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     //marginTop: 40,
-    backgroundColor: '#fffaf0',
     flex: 1,
     gap: 1,
   },
-  row: {
-    backgroundColor: 'oldlace',
-    // borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cccccc',
-    columnGap: 6,
-    flex: 1,
-  },
-  inputBox: {
-    borderWidth: 1,
-    borderColor: 'deepskyblue',
-    width: '70%',
-    padding: 12,
-    borderRadius: 5,
-  },
-  btn: {
-    // width: '20%',
-  },
   goalListContainer: {
-    backgroundColor: 'aliceblue',
     flex: 5,
-  },
-  goalItem: {
-    borderRadius: 4,
-    backgroundColor: '#5e0acc',
-    shadowOpacity: 1,
-    borderWidth: 1,
-    marginBottom: 4,
-
-    //textAlign: 'center',
-  },
-  goalText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 400,
-    padding: 16,
   },
 });
 /*
